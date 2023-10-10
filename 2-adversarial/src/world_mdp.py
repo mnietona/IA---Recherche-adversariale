@@ -5,11 +5,11 @@ from mdp import MDP, State
 
 
 @dataclass
-class MyState(State):
+class MyWorldState(State):
     ...
 
 
-class WorldMDP(MDP[Action, MyState]):
+class WorldMDP(MDP[Action, MyWorldState]):
     def __init__(self, world: World):
         self.world = world
 
@@ -17,17 +17,17 @@ class WorldMDP(MDP[Action, MyState]):
         self.n_expanded_states = 0
         ...
 
-    def available_actions(self, state: MyState) -> list[Action]:
+    def available_actions(self, state: MyWorldState) -> list[Action]:
         ...
 
-    def is_final(self, state: MyState) -> bool:
+    def is_final(self, state: MyWorldState) -> bool:
         ...
 
-    def transition(self, state: MyState, action: Action) -> MyState:
+    def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
         ...
 
 
 class BetterValueFunction(WorldMDP):
-    def transition(self, state: MyState, action: Action) -> MyState:
+    def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
         # Change the value of the state here.
         ...
