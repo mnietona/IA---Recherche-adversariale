@@ -19,6 +19,7 @@ class WorldMDP(MDP[MyWorldState, Action]):
         self.world = world
 
     def reset(self) -> MyWorldState:
+        self.n_expanded_states = 0
         self.world.reset()
         return MyWorldState(world=self.world, world_state=self.world.get_state(), current_agent=0, value=0)
 
