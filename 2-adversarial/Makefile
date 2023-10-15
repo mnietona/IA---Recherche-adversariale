@@ -14,6 +14,6 @@ clean:
 	find . -type d -name "__pycache__" -exec rm -r {} +
 
 t:
-	pytest tests/test_mdp.py
+	pytest tests/test_minimax.py
 
 .PHONY: all main test clean

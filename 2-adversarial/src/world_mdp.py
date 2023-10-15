@@ -13,6 +13,7 @@ class MyWorldState(State):
 
     def is_final(self):
         return self.world.done
+    
 
 class WorldMDP(MDP[MyWorldState, Action]):
     def __init__(self, world: World):
@@ -24,7 +25,8 @@ class WorldMDP(MDP[MyWorldState, Action]):
         return MyWorldState(world=self.world, world_state=self.world.get_state(), current_agent=0, value=0)
 
     def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
-        if self.world.agents[state.current_agent].is_alive:
+
+        if self.world.agents[state.current_agent].is_alive and not self.world.done:
             # Seul l'agent actif agit, les autres effectuent l'action STAY.
             actions = [Action.STAY] * self.world.n_agents
             actions[state.current_agent] = action
