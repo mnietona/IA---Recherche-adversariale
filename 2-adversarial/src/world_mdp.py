@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import lle
 from lle import World, Action, WorldState
 from mdp import MDP, State
-from typing import List
+from typing import List, Tuple
 
 @dataclass
 class MyWorldState(State):
@@ -55,6 +55,37 @@ class WorldMDP(MDP[MyWorldState, Action]):
 
 
 class BetterValueFunction(WorldMDP):
+
+    def compute_distance(self, start: Tuple[int, int], targets: List[Tuple[int, int]]) -> int:
+        """Compute the minimum Manhattan distance from start to any target."""
+        return min(abs(start[0] - target[0]) + abs(start[1] - target[1]) for target in targets)
+
+    def compute_heuristic(self, state: MyWorldState) -> float:
+        """Compute a heuristic based on the state. Lower is better."""
+        agent_position = state.world_state.agents_positions[state.current_agent]
+
+        # Distance to nearest gem
+        uncollected_gems_positions = [gem[0] for gem, collected in zip(state.world.gems, state.world_state.gems_collected) if not collected]
+        if uncollected_gems_positions:  # Check if there are gems left to collect
+            distance_to_nearest_gem = self.compute_distance(agent_position, uncollected_gems_positions)
+        else:
+            distance_to_nearest_gem = 0  # All gems collected
+
+        # Distance to nearest exit
+        distance_to_nearest_exit = self.compute_distance(agent_position, state.world.exit_pos)
+
+        # Heuristic value is a combination of distances and the number of collected gems
+        heuristic_value = -(state.world.gems_collected * 10 + distance_to_nearest_gem + distance_to_nearest_exit)
+
+        return heuristic_value
+
     def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
-        # Change the value of the state here.
-        ...
+        new_state = super().transition(state, action)  # Using the transition from the parent class.
+        
+        heuristic_value = self.compute_heuristic(new_state)
+        new_value = new_state.value + heuristic_value
+        
+        # Replace the value of the new state with the new computed value.
+        new_state.value = new_value
+        
+        return new_state

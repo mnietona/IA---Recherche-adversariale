@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from lle import World, Action
 from world_mdp import WorldMDP, BetterValueFunction
 from adversarial_search import minimax, alpha_beta, expectimax
@@ -21,7 +20,7 @@ DEPTHS = [*range(1, 11)]
 
 WMDPS = (WorldMDP, BetterValueFunction)
 
-ALGOS = ((alpha_beta, "alpha_beta"), (expectimax, "expectimax"))
+ALGOS = ((minimax, "minimax"),)
 
 
 def main():
@@ -48,4 +47,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+	main()
