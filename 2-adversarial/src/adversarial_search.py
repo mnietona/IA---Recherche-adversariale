@@ -46,8 +46,82 @@ def minimax(mdp: MDP[A, S], state: S, max_depth: int) -> A:
 
 
 def alpha_beta(mdp: MDP[A, S], state: S, max_depth: int) -> A:
-    ...
+    """ Retourne la meilleure action selon l'algorithme alpha-beta. """
+    if state.current_agent != 0:
+        raise ValueError("The state should be for agent 0 to play.")
+    
+    def _max(state: S, depth: int, alpha: float, beta: float) -> Tuple[float, A]:
+        if mdp.is_final(state) or depth == max_depth:
+            return state.value, None
+        value = float('-inf')
+        best_action = None
+        for action in mdp.available_actions(state):
+            child = mdp.transition(state, action)
+            decrease_depth = 1 if child.current_agent != state.current_agent else 0
+            child_value, _ = _min(child, depth + decrease_depth, alpha, beta)
+            if child_value > value:
+                value, best_action = child_value, action
+            # Élagage alpha
+            if value >= beta:
+                return value, best_action
+            alpha = max(alpha, value)
+        return value, best_action
 
+    def _min(state: S, depth: int, alpha: float, beta: float) -> Tuple[float, A]:
+        if mdp.is_final(state) or depth == max_depth:
+            return state.value, None
+        value = float('inf')
+        for action in mdp.available_actions(state):
+            child = mdp.transition(state, action)
+            decrease_depth = 1 if child.current_agent == 0 else 0
+            if child.current_agent == 0:
+                child_value, _ = _max(child, depth + decrease_depth, alpha, beta)
+            else:
+                child_value, _ = _min(child, depth + decrease_depth, alpha, beta)
+            value = min(value, child_value)
+            # Élagage beta
+            if value <= alpha:
+                return value, None
+            beta = min(beta, value)
+        return value, None
 
-def expectimax(mdp: MDP[A, S], state: S, max_depth: int) -> Action:
-    ...
+    _, best_action = _max(state, 0, float('-inf'), float('inf'))
+    return best_action
+
+def expectimax(mdp: MDP[A, S], state: S, max_depth: int) -> A:
+    """ Retourne la meilleure action selon l'algorithme expectimax. """
+
+    if state.current_agent != 0:
+        raise ValueError("The state should be for agent 0 to play.")
+    
+    def _max(state: S, depth: int) -> Tuple[float, A]:
+        if mdp.is_final(state) or depth == max_depth:
+            return state.value, None
+        value = float('-inf')
+        best_action = None
+        for action in mdp.available_actions(state):
+            child = mdp.transition(state, action)
+            decrease_depth = 1 if child.current_agent != state.current_agent else 0
+            child_value, _ = _expectation(child, depth + decrease_depth)
+            if child_value > value:
+                value, best_action = child_value, action
+        return value, best_action
+
+    def _expectation(state: S, depth: int) -> Tuple[float, A]:
+        if mdp.is_final(state) or depth == max_depth:
+            return state.value, None
+        value = 0
+        actions = mdp.available_actions(state)
+        prob = 1.0 / len(actions)
+        for action in actions:
+            child = mdp.transition(state, action)
+            decrease_depth = 1 if child.current_agent == 0 else 0
+            if child.current_agent == 0:
+                child_value, _ = _max(child, depth + decrease_depth)
+            else:
+                child_value, _ = _expectation(child, depth + decrease_depth)
+            value += prob * child_value
+        return value, None
+
+    _, best_action = _max(state, 0)
+    return best_action

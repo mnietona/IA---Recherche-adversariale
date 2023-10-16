@@ -27,6 +27,7 @@ class WorldMDP(MDP[MyWorldState, Action]):
     def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
         
         self.world.set_state(state.world_state)
+        self.n_expanded_states += 1
         actions_for_all_agents = [Action.STAY] * self.world.n_agents
         actions_for_all_agents[state.current_agent] = action
         reward = self.world.step(actions_for_all_agents)
@@ -51,3 +52,9 @@ class WorldMDP(MDP[MyWorldState, Action]):
 
     def is_final(self, state: MyWorldState) -> bool:
         return state.is_final()
+
+
+class BetterValueFunction(WorldMDP):
+    def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
+        # Change the value of the state here.
+        ...

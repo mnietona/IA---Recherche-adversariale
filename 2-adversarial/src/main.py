@@ -1,36 +1,51 @@
-import cv2
-from lle import World
-from world_mdp import WorldMDP
-import random
-from time import sleep
+#!/usr/bin/env python3
+from lle import World, Action
+from world_mdp import WorldMDP, BetterValueFunction
+from adversarial_search import minimax, alpha_beta, expectimax
+import csv
 
-def visualize_world_mdp(world_filename: str):
-    # Charger le monde à partir du fichier fourni
-    w = World.from_file(world_filename)
-    mdp = WorldMDP(w)
-    
-    state = mdp.reset()
 
-    while not state.is_final():
-        # Pour simplifier, nous allons simplement choisir une action aléatoire parmi les actions disponibles pour l'agent actif.
-        actions = mdp.available_actions(state)
-        chosen_action = random.choice(actions)
-        
-        # Transition vers le prochain état
-        state = mdp.transition(state, chosen_action)
-        
-        # Visualiser l'état actuel du monde
-        img = w.get_image()
-        cv2.imshow("WorldMDP Visualization", img)
-        # Attendre 500ms pour passer à l'étape suivante
-        key = cv2.waitKey(500)
-        if key == 27:  # Escape key
-            break
-    
-    # Attendre 1 seconde puis fermer la fenêtre
-    sleep(1)
-    cv2.destroyAllWindows()
+WORLDS = [
+World("""
+.  . . . G G S0
+.  . . @ @ @ G
+S2 . . X X X G
+.  . . . G G S1
+"""
+),
+
+]
+
+
+DEPTHS = [*range(1, 11)]
+
+WMDPS = (WorldMDP, BetterValueFunction)
+
+ALGOS = ((alpha_beta, "alpha_beta"), (expectimax, "expectimax"))
+
+
+def main():
+    results = []
+    for i in range(len(WORLDS)):
+        for depth in DEPTHS:
+            for WMDP in WMDPS:
+                for algo, name in ALGOS:
+                    world = WMDP(WORLDS[i])
+                    action = algo(world, world.reset(), depth)
+                    n_states = world.n_expanded_states
+                    results.append([i, depth, WMDP.__name__, name, action, n_states])
+
+    # Écrivez les résultats dans un fichier CSV
+    with open('results.csv', 'w', newline='') as csvfile:
+        fieldnames = ['World', 'Depth', 'WMDP', 'Algorithm', 'Algorithm Name', 'Expanded States']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for result in results:
+            writer.writerow({'World': str(result[0]), 'Depth': result[1], 'WMDP': result[2], 'Algorithm': result[3], 'Algorithm Name': result[4], 'Expanded States': result[5]})
+
+    print("Les résultats ont été enregistrés dans le fichier results.csv")
+
 
 if __name__ == "__main__":
-    # Supposons que vous ayez une carte appelée "map.txt" que vous souhaitez visualiser
-    visualize_world_mdp("level3")
+    main()
