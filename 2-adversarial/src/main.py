@@ -6,42 +6,69 @@ import csv
 
 WORLDS = [
 World("""
-.  . . . G G S0
-.  . . @ @ @ G
-S2 . . X X X G
-.  . . . G G S1
-"""
+      . . . S2 S0 S1 .
+      G . . . . . G
+      L0E . . . . . .
+      . . @ G . . .
+      G . . . . . G
+      . . . . @ G .
+      . . X . . @ G
+      G X X . . . .
+      """
 ),
+
+World("""
+      . . . S2 S0 S1 .
+      G . . . . . G
+      @ . . @ @ @ @
+      . . G G . . .
+      G . . . . @ G
+      . . . . @ G .
+      . . . . . @ G
+      G X X X . . .
+      """
+),
+
+World("""
+      . S0 S1 S2 . . .
+      . . . . . . G
+      L1E . . . @ . .
+      . G . . G . G
+      . . @ . . . L2W
+      . . . . G . @
+      . . @ . . . .
+      . G . X X X G
+      """
+)
 
 ]
 
-
-DEPTHS = [*range(1, 11)]
+depth = 5
 
 WMDPS = (WorldMDP, BetterValueFunction)
 
-ALGOS = ((minimax, "minimax"),)
+ALGOS = ((alpha_beta, "Alpha-Beta"),)
 
 
 def main():
     results = []
     for i in range(len(WORLDS)):
-        for depth in DEPTHS:
-            for WMDP in WMDPS:
-                for algo, name in ALGOS:
-                    world = WMDP(WORLDS[i])
-                    action = algo(world, world.reset(), depth)
-                    n_states = world.n_expanded_states
-                    results.append([i, depth, WMDP.__name__, name, action, n_states])
+
+        for WMDP in WMDPS:
+            for algo, name in ALGOS:
+                world = WMDP(WORLDS[i])
+                action = algo(world, world.reset(), depth)
+                n_states = world.n_expanded_states
+                results.append([i, depth, WMDP.__name__, name, action, n_states])
 
     # Écrivez les résultats dans un fichier CSV
     with open('results.csv', 'w', newline='') as csvfile:
-        fieldnames = ['World', 'Depth', 'WMDP', 'Algorithm', 'Algorithm Name', 'Expanded States']
+        fieldnames = ['World', 'Depth', 'WMDP', 'Algorithm', 'Action', 'Expanded States']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()
         for result in results:
-            writer.writerow({'World': str(result[0]), 'Depth': result[1], 'WMDP': result[2], 'Algorithm': result[3], 'Algorithm Name': result[4], 'Expanded States': result[5]})
+            writer.writerow({'World': str(result[0]), 'Depth': result[1], 'WMDP': result[2], 'Algorithm': result[3], 'Action': result[4], 'Expanded States': result[5]})
 
     print("Les résultats ont été enregistrés dans le fichier results.csv")
 

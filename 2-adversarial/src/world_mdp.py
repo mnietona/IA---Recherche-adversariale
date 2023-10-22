@@ -27,6 +27,8 @@ class WorldMDP(MDP[MyWorldState, Action]):
     def transition(self, state: MyWorldState, action: Action) -> MyWorldState:
         
         self.world.set_state(state.world_state)
+        if self.is_final(state):
+            return state
         self.n_expanded_states += 1
         actions_for_all_agents = [Action.STAY] * self.world.n_agents
         actions_for_all_agents[state.current_agent] = action
@@ -56,6 +58,7 @@ class WorldMDP(MDP[MyWorldState, Action]):
 
 class BetterValueFunction(WorldMDP):
 
+    
     def compute_distance(self, start: Tuple[int, int], targets: List[Tuple[int, int]]) -> int:
         """Compute the minimum Manhattan distance from start to any target."""
         return min(abs(start[0] - target[0]) + abs(start[1] - target[1]) for target in targets)
