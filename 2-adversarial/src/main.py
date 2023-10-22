@@ -43,7 +43,6 @@ World("""
 
 ]
 
-depth = 5
 
 WMDPS = (WorldMDP, BetterValueFunction)
 
@@ -53,15 +52,14 @@ ALGOS = ((alpha_beta, "Alpha-Beta"),)
 def main():
     results = []
     for i in range(len(WORLDS)):
+        for depth in range(5, 8):  
+            for WMDP in WMDPS:     
+                for algo, name in ALGOS:
+                    world = WMDP(WORLDS[i])
+                    action = algo(world, world.reset(), depth)
+                    n_states = world.n_expanded_states
+                    results.append([i, depth, WMDP.__name__, name, action, n_states])
 
-        for WMDP in WMDPS:
-            for algo, name in ALGOS:
-                world = WMDP(WORLDS[i])
-                action = algo(world, world.reset(), depth)
-                n_states = world.n_expanded_states
-                results.append([i, depth, WMDP.__name__, name, action, n_states])
-
-    # Écrivez les résultats dans un fichier CSV
     with open('results.csv', 'w', newline='') as csvfile:
         fieldnames = ['World', 'Depth', 'WMDP', 'Algorithm', 'Action', 'Expanded States']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
