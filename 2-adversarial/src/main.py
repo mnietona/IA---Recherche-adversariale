@@ -2,6 +2,7 @@ from lle import World, Action
 from world_mdp import WorldMDP, BetterValueFunction
 from adversarial_search import minimax, alpha_beta, expectimax
 import csv
+import cv2
 
 
 WORLDS = [
@@ -42,25 +43,30 @@ World("""
 )
 
 ]
-
-
 WMDPS = (WorldMDP, BetterValueFunction)
 
-ALGOS = ((alpha_beta, "Alpha-Beta"),)
+ALGOS = ((alpha_beta, "Alpha-Beta"), (minimax, "Minimax"),)
 
 
 def main():
     results = []
-    for i in range(len(WORLDS)):
-        for depth in range(5, 8):  
-            for WMDP in WMDPS:     
+    for i in range(0, len(WORLDS)):
+        cv2.imwrite(f"world_{i+1}.png", WORLDS[i].get_image())
+        for depth in range(1, 10):
+            print(depth)
+            for WMDP in WMDPS:
                 for algo, name in ALGOS:
+                    if BetterValueFunction == WMDP and algo == minimax:continue
+
                     world = WMDP(WORLDS[i])
-                    action = algo(world, world.reset(), depth)
+                    s0 = world.reset()
+
+                    action = algo(world, s0, depth)
                     n_states = world.n_expanded_states
                     results.append([i, depth, WMDP.__name__, name, action, n_states])
 
-    with open('results.csv', 'w', newline='') as csvfile:
+    # Écrivez les résultats dans un fichier CSV
+    with open('results_newworld1.csv', 'w', newline='') as csvfile:
         fieldnames = ['World', 'Depth', 'WMDP', 'Algorithm', 'Action', 'Expanded States']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -72,4 +78,4 @@ def main():
 
 
 if __name__ == "__main__":
-	main()
+    main()
