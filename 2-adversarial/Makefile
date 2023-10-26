@@ -13,6 +13,4 @@ test:
 clean:
 	find . -type d -name "__pycache__" -exec rm -r {} +
 
-t:
-	pytest tests/test_better_value.py
 .PHONY: all main test clean
